@@ -1,0 +1,10 @@
+*.exe
+*.bin
+*.obj
+*.out
+*.doc
+*.docx
+*.vs
+**/evaluations/**
+
+*.*~
