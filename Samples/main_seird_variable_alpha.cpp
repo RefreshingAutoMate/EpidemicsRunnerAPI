@@ -21,10 +21,14 @@ int main(int argc, char *argv[]){
 	std::vector<double> u0={753056,2714,0,0,72}; // Inital Values: Susceptibles, Exposed, Infected, Recoverd, Deceased
 	double t_start=0;
 	double t_end=42;
+	
+	seird_model.change_minimum_stepsize(0.01);
+	seird_model.change_linear_implicit_maximum_stepsize(0.1);
+	seird_model.change_linear_implicit_tol(0.000001);
 
 	auto result=seird_model.run_linear_implicit(t_start,u0,t_end);
 	auto timepoints=std::get<0>(result);
 	auto data=std::get<1>(result);	
-	std::cout<<"Optimization done\n";
+	std::cout<<"Done\n";
 	ug::epi::write_data(argv[0], "_test.txt", timepoints, data,seird_model.names);
 }

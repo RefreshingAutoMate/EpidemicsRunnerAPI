@@ -20,11 +20,14 @@ namespace ug{
 			F qq;
 			F pp;
 			F ht=0.01;
+			F ht_max=0.125;
 			F cumulated_infected_of_last_run=F(-1);
 			F cumulated_exposed_of_last_run=F(-1);
 			T cumulated_infected_of_last_run_container;
-			T cumulated_exposed_of_last_run_container;			
-
+			T cumulated_exposed_of_last_run_container;	
+			
+			double tol=0.01;
+			
 			void calc_values(F t, std::array<F,5>& u, std::vector<F>& res){
 				std::array<F,5> k1=system(u,t);
 				std::array<F,5> v;
@@ -114,9 +117,16 @@ namespace ug{
 			
 			}	
 
-			void change_step_size_time(F _ht) {
+			void change_minimum_stepsize(F _ht) {
 				ht = _ht;
 			}
+			
+			void change_linear_implicit_tol(double _tol){
+				tol=_tol;
+			}
+			void change_linear_implicit_maximum_stepsize(double _ht_max){
+				ht_max=_ht_max;
+			}			
 			std::tuple<std::vector<F>,std::vector<F>> run(F t0, const T u0, F tend){
 				std::vector<F> res;
 				std::vector<F> ts;
@@ -142,13 +152,13 @@ namespace ug{
 				return std::make_tuple(ts,res);			
 			}
 			
-			void update_metainfo(std::array<F, 5>& u, F t){	
+			void update_metainfo(std::array<F, 5>& u, F t, F h){	
 				F _alpha=eval_alpha(t);
 				F G = u[0]; // Gesunde (Susceptibles)
 				F A = u[1]; // Angesteckte (Exposed)
 				F K = u[2]; // Kranke (Infected)							
-				cumulated_exposed_of_last_run+=_alpha * G * A*ht;
-				cumulated_infected_of_last_run+=(kappa / qq) * A*ht;
+				cumulated_exposed_of_last_run+=_alpha * G * A*h;
+				cumulated_infected_of_last_run+=(kappa / qq) * A*h;
 				cumulated_exposed_of_last_run_container.push_back(cumulated_exposed_of_last_run);
 				cumulated_infected_of_last_run_container.push_back(cumulated_infected_of_last_run);					
 			}
@@ -202,7 +212,9 @@ namespace ug{
 				cumulated_exposed_of_last_run_container.push_back(u0[1]);
 				cumulated_infected_of_last_run_container.push_back(u0[2]);			
 				utility::LinearImplicitSolver23<std::array<F,5>,std::array<F,25>,SEIRD_VARA,F> solver(this,5);
-				solver.change_step_size(ht);
+				solver.change_minimum_stepsize(ht);
+				solver.change_maximum_stepsize(ht_max);
+				solver.change_tol(tol);
 				auto result=solver.run(t0, u, tend);
 		
 				

@@ -23,6 +23,8 @@ namespace ug{
 			F qq; /**< Incubation coefficient that controls how many people leave the Exposed class*/
 			F pp; /**< Coefficient that controls how many people leave the Infected class*/
 			F ht=0.01; /**< Step size for the ordinary differential equation solvers */
+			F ht_max=0.125;
+			double tol=0.01;
 
 			void calc_values(F t, std::array<F,5>& u, std::vector<F>& res){
 				std::array<F,5> k1=system(u);
@@ -70,9 +72,15 @@ namespace ug{
 			/*! Sets the step size for the ordinary differential equation solvers.
 			@param[in] _ht Step size for the ODE solvers		
 			*/	
-			void change_step_size_time(F _ht) {
+			void change_minimum_stepsize(F _ht) {
 				ht = _ht;
 			}
+			void change_linear_implicit_tol(double _tol){
+				tol=_tol;
+			}
+			void change_linear_implicit_maximum_stepsize(double _ht_max){
+				ht_max=_ht_max;
+			}		
 			
 			/*! Solves the SEIRD model with an explicit solver of fourth order. Because the solver is explicit, instabilities in the solution
 			 * profile can occur. It is recommended to use the linear implicit solver. Results are stored in a vector of vectors. Results are not written to file as of yet.
@@ -104,6 +112,16 @@ namespace ug{
 					ts.push_back(tend);
 				}
 				return std::make_tuple(ts,res);			
+			}
+			
+			void update_metainfo(std::array<F, 5>& u, F t, F h){	
+				F G = u[0]; // Gesunde (Susceptibles)
+				F A = u[1]; // Angesteckte (Exposed)
+				F K = u[2]; // Kranke (Infected)							
+				cumulated_exposed_of_last_run+=alpha * G * A*h;
+				cumulated_infected_of_last_run+=(kappa / qq) * A*h;
+				cumulated_exposed_of_last_run_container.push_back(cumulated_exposed_of_last_run);
+				cumulated_infected_of_last_run_container.push_back(cumulated_infected_of_last_run);					
 			}
 			
 			//!< Returns the system matrix of the ordinary differential equations system determined by the SEIRD model evaluated at time t.
@@ -157,7 +175,9 @@ namespace ug{
 			std::tuple<std::vector<F>,std::vector<F>> run_linear_implicit(F t0, const T& u0, F tend) {
 				std::array<F, 5> u = { u0[0],u0[1],u0[2],u0[3],u0[4] };
 				utility::LinearImplicitSolver23<std::array<F,5>,std::array<F,25>,SEIRD,F> solver(this,5);
-				solver.change_step_size(ht);
+				solver.change_minimum_stepsize(ht);
+				solver.change_maximum_stepsize(ht_max);
+				solver.change_tol(tol);
 				auto result=solver.run(t0, u, tend);
 				return std::make_tuple(result.first,result.second);
 			}

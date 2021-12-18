@@ -575,12 +575,13 @@ namespace ug {
 			/*! Sets the time step size for the ordinary differential equation solvers.
 			@param[in] _ht Time step size for the ODE solvers		
 			*/
-			void change_step_size_time(F _ht) {
+			void change_minimum_stepsize_time(F _ht) {
 				ht = _ht;
 			}
 			/*! Sets the spatial step size for the ordinary differential equation solvers.
 			@param[in] _hx Spatial step size for the ODE solvers		
-			*/				void change_step_size_spatial(F _hx) {
+			*/
+			void change_step_size_spatial(F _hx) {
 				hx= _hx;
 			}
 			
@@ -736,7 +737,7 @@ namespace ug {
 				utility::LinearImplicitSolver23<std::vector<F>,std::vector<F>,SEIRD_PDE,F> solver(this,dim);
 				
 			
-				solver.change_step_size(hx);
+				//solver.change_step_size(hx);
 				
 				std::cout<<"Staring linear implicit solver\n";
 				OutputPDEWriter<std::vector<double>,double> writer(5,dimX,dimY,names,hx,hx);
@@ -744,8 +745,8 @@ namespace ug {
 
 				writer.write_gridmapping(filepath, filename+".txt",t0,u0);
 				
-				solver.change_step_size(ht);
-				auto result=solver.run(t0, u0, tend);
+				solver.change_minimum_stepsize(ht);
+				auto result=solver.run_nonadaptive(t0, u0, tend);
 				std::cout<<"Ended linear implicit solver\n";
 				std::cout<<result.second.size();
 
