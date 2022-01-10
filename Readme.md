@@ -1,7 +1,7 @@
 # EpidemicsRunner API #
 
 The **EpidemicsRunner API** is a C++ library that provides various algorithms
-useful for modeling infectious diseases. Amongst others, it is used by [CovPred](CovPred.de) in this exact form.
+useful for modeling infectious diseases. Amongst others, it is used by [CovPred](www.CovPred.de) in this exact form.
 
 # Contents
 
@@ -26,7 +26,7 @@ The following algorithms are currently implemented:
 
 |Name|Description|
 |---|---|
-|SIR|Classical Susceptible-Infected-Recovered-Deaths ODE Model|
+|SIR|Classical Susceptible-Infected-Recovered ODE Model augmented with a deceased class|
 |SEIRD| Extended SIR model accounting for a new class (Exposed) amongst other additions|
-|SEIRD_VARA|Extended SRI model paired with variable (over time) infection rate|
+|SEIRD_VARA|Extended SIR model paired with variable (over time) infection rate|
 |SEIRD_PDE| A PDE formulation of the SEIRD model, discretized using Finite Differences|
