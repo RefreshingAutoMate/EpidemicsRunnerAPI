@@ -111,7 +111,7 @@ namespace ug {
 					std::vector<F> k3(dim);
 					
 					F h = h_min;
-					F t = t0+h;
+					F t = t0;
 					//std::copy(u0.begin(), u0.end(), u.begin());
 					F a = 1 / (2 + 1.41);
 			
@@ -155,7 +155,7 @@ namespace ug {
 						co::mul::dgemm_nn(dim, 1, dim, -a*h, J.begin(), 1, dim, k1.begin(), 1, 1, F(1.0), fy.begin(), 1, 1);
 						co::mul::dgemm_nn(dim, 1, dim, F(1.0), Qt.begin(), 1, dim, fy.begin(), 1, 1, F(0.0), q1.begin(), 1, 1);
 						co::dc::backwards_substitution<F>(R.begin(), k2.begin(), 1, q1.begin(), dim);
-						
+						t+=h;
 						for (int i = 0; i < dim; i++) {
 									u[i] = u_copy[i] + h*k2[i];
 						}	
@@ -169,7 +169,6 @@ namespace ug {
 							(*ow).write_to_file(filepath, filename+std::to_string(iter)+".txt",t,u);
 						}	
 						iter++;
-						t+=h;
 					}
 					return std::make_pair(timepoints, datapoints);
 				}
@@ -178,6 +177,11 @@ namespace ug {
 						std::cerr << "Error: Input dimension of u0 in LinearImplicitSolver23 is different than the dimension previously given in the constructor\n";
 						std::cerr << "u.size() = " << u.size() << std::endl;
 						std::cerr << "dim = " << dim << std::endl;
+							return std::make_pair<std::vector<F>,std::vector<F>>({},{});
+					}
+					else if(h_min>=h_max){
+						std::cerr<<"The solver stepsize hmin is greater or equal hmax\n";
+						return std::make_pair<std::vector<F>,std::vector<F>>({},{});
 					}
 					if (StoreToFile){
 						(*ow).write_to_file(filepath, filename+std::to_string(0)+".txt",t0,u);
@@ -354,6 +358,7 @@ namespace ug {
 						iter++;
 						//t+=h;
 					}
+
 					return std::make_pair(timepoints, datapoints);
 				}
 				
