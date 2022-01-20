@@ -178,7 +178,7 @@ namespace ug{
 				res[2] = (kappa / qq) * A - (F(1) / pp) * K; 		// dK/dt = (kappa*A)/qq - (K/pp) 
 				res[3] = ((F(1) - kappa) / qq) * A + ((F(1) - theta) / pp) * K;   // dR/dt= (1-kappa)/q *A +(1 -theta)/pp *K
 				res[4] = (theta / pp) * K; 				// dV/dt = theta/pp * K			
-				return res;
+				return res; 
 			}
 			
 		public: bool check=false;
@@ -215,7 +215,7 @@ namespace ug{
 				solver.change_minimum_stepsize(ht);
 				solver.change_maximum_stepsize(ht_max);
 				solver.change_tol(tol);
-				auto result=solver.run(t0, u, tend);
+				auto result=solver.run_nonadaptive(t0, u, tend);
 		
 				
 				if (cumulated_exposed != nullptr){

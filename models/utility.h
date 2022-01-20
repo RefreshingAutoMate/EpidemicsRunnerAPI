@@ -94,8 +94,15 @@ namespace ug {
 					if (StoreToFile){
 						(*ow).write_to_file(filepath, filename+std::to_string(0)+".txt",t0,u);
 					}
+		
+					F h = h_min;
+					F t = t0;
+					if (tend<t0){
+						h*=F(-1);
+					}
+					//std::vector<F> datapoints(std::abs((double)(tend-t0)/((double)h)*dim);
 					std::vector<F> datapoints;
-
+					
 					for (int i = 0; i < dim; i++) {
 						datapoints.push_back(u[i]);
 					}
@@ -110,20 +117,24 @@ namespace ug {
 					std::vector<F> k2(dim);
 					std::vector<F> k3(dim);
 					
-					F h = h_min;
-					F t = t0;
+					
 					//std::copy(u0.begin(), u0.end(), u.begin());
 					F a = 1 / (2 + 1.41);
 			
 					std::vector<F> u_copy(dim);
 					
-
 					int iter = 1;
 
 					F h_prev=h;
 					
+					bool schranke=true;
 					
-					while (t<=tend+h) {		
+					while (t<tend+h) {	
+/*					
+						if (std::abs(tend-t)<std::abs(h)){
+							schranke=false;
+						}
+						*/
 						if constexpr (has_update_metainfo<C>::value){
 							model->update_metainfo(u,t,h);
 						}		
@@ -155,10 +166,12 @@ namespace ug {
 						co::mul::dgemm_nn(dim, 1, dim, -a*h, J.begin(), 1, dim, k1.begin(), 1, 1, F(1.0), fy.begin(), 1, 1);
 						co::mul::dgemm_nn(dim, 1, dim, F(1.0), Qt.begin(), 1, dim, fy.begin(), 1, 1, F(0.0), q1.begin(), 1, 1);
 						co::dc::backwards_substitution<F>(R.begin(), k2.begin(), 1, q1.begin(), dim);
-						t+=h;
+					
 						for (int i = 0; i < dim; i++) {
 									u[i] = u_copy[i] + h*k2[i];
 						}	
+						
+						t+=h;
 						if (StoreToFile==false){
 							for (int i = 0; i < dim; i++) {
 								datapoints.push_back(u[i]);
@@ -171,7 +184,34 @@ namespace ug {
 						iter++;
 					}
 					return std::make_pair(timepoints, datapoints);
+					if (t0<tend){
+						return std::make_pair(timepoints, datapoints);
+					}
+					else{
+						std::cout<<t0<<"  "<<tend<<"\n";
+						std::cin.get();
+						std::vector<F> datapoints_reversed(datapoints.size());
+						std::vector<F> timepoints_reversed(timepoints.size());
+						
+						for (int i=0;i<datapoints.size();i+=dim){
+							for (int j=0;j<dim;j++){
+								/*if ((i+j)>=datapoints.size()){
+								std::cout<<int(datapoints.size())-i-dim+j<<"\n";
+								}
+								*/
+								datapoints_reversed[i+j]=datapoints[int(datapoints.size())-i-dim+j];
+							}
+
+						}
+						for (int i=0;i<timepoints.size();i++){
+							//std::cout<<int(timepoints.size())-1-i<<"\n";
+							timepoints_reversed[i]=timepoints[int(timepoints.size())-1-i];
+						}
+						return std::make_pair(timepoints_reversed, datapoints_reversed);
+					}
+
 				}
+				
 				std::pair<std::vector<F>,std::vector<F>> run(F t0,  T1 u,  F tend) {
 					if (u.size() != dim) {
 						std::cerr << "Error: Input dimension of u0 in LinearImplicitSolver23 is different than the dimension previously given in the constructor\n";
@@ -258,13 +298,20 @@ namespace ug {
 							co::dc::backwards_substitution<F>(R.begin(), k2.begin(), 1, q1.begin(), dim);
 
 							//k3 (useful for adaptive stepsizes)
-							
+							for (int i = 0; i < dim; i++) {
+									u[i] = u_copy[i] + h*k2[i];
+									//std::cout<<u[i]<<" vs." <<u_copy[i]<<"\n";
+							}	
+							temp = model->system(u,t+h); //it only has dim entries but otherwise type errors in this old version of dgemm
+							std::copy(temp.begin(), temp.end(), fy.begin());
+							co::mul::dgemm_nn(dim, 1, dim, -d31* h, J.begin(), 1, dim, k1.begin(), 1, 1, F(1.0), fy.begin(), 1, 1); //f(yi+h*k2)=f(yi+h*k2)-d31*h*J*k1
+							co::mul::dgemm_nn(dim, 1, dim, -d32  *h, J.begin(), 1, dim, k2.begin(), 1, 1, F(1.0), fy.begin(), 1, 1);
+							co::mul::dgemm_nn(dim, 1, dim, F(1.0), Qt.begin(), 1, dim, fy.begin(), 1, 1, F(0.0), q1.begin(), 1, 1);
+							co::dc::backwards_substitution<F>(R.begin(), k3.begin(), 1, q1.begin(), dim);
 							
 							//std::cout<<"toln"<<toln<<"\n";
 							err=0;
 							for (int i = 0; i < dim; i++) {
-			
-									u[i] = u_copy[i] + h*k2[i];
 									F diff = h*k2[i] -((h / 6) * (k1[i] + 4 * k2[i] + k3[i]));
 									err+=diff*diff;
 									

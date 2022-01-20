@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
-alldata=np.loadtxt("D:/CovPredServer/submodules/EpidemicsRunnerAPI/Samples/linear_implicit_output.txt",delimiter="\t")
+import os
+file_directory = os.path.dirname(__file__)
+print(file_directory)
+alldata=np.loadtxt(file_directory+"/linear_implicit_output.txt",delimiter="\t")
 
 t=alldata[:,0]
 u1=alldata[:,1]
