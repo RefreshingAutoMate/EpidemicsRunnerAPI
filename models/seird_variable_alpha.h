@@ -215,7 +215,7 @@ namespace ug{
 				solver.change_minimum_stepsize(ht);
 				solver.change_maximum_stepsize(ht_max);
 				solver.change_tol(tol);
-				auto result=solver.run_nonadaptive(t0, u, tend);
+				auto result=solver.run(t0, u, tend);
 		
 				
 				if (cumulated_exposed != nullptr){
