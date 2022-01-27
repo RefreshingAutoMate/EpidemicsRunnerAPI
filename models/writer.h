@@ -88,11 +88,11 @@ namespace ug{
 				
 		
 		template<class TA,class TB,class TC>
-		void write_data(std::string path, std::string name, const TA& times, const TB& m, const TC& datanames,std::string delimiter="--",std::string reason=""){
+		void write_data(std::string path, std::string name, const TA& times, const TB& m, const TC& datanames,std::string comment="--",std::string reason="",std::string delimiter="\t"){
 			size_t dim=datanames.size();
 			std::string output;
 			if (reason.length()!=0){
-				output.append(delimiter);
+				output.append(comment);
 				output.append(reason);
 				output+="\n";				
 			}
@@ -102,17 +102,17 @@ namespace ug{
 			general_output.precision(15);
 			general_output.open(path+name);
 			general_output<<output;
-			general_output<<delimiter<<"time\t";
+			general_output<<comment<<"time"<<delimiter;
 			
 			for (size_t i=0;i<dim;i++){
-				general_output<<datanames[i]<<"\t";
+				general_output<<datanames[i]<<delimiter;
 			}
 			
 			general_output<<"\n";
 			for (size_t i=0;i<(m.size()/dim);i++){
 				general_output<<times[i];
 				for (size_t j=0;j<dim;j++){
-					general_output<<"\t"<<m[i*dim+j];
+					general_output<<delimiter<<m[i*dim+j];
 				}
 				general_output<<"\n";
 			}
