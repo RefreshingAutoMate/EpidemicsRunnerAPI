@@ -329,7 +329,15 @@ namespace ug{
 				}
 				return std::make_tuple(result.first,result.second);
 			}
-		
+			
+			
+			std::vector<std::vector<F>> get_cumulated_exposed() const{
+				return cumulated_exposed_of_last_run_container;
+			}
+			std::vector<std::vector<F>> get_cumulated_infected() const{
+				return cumulated_infected_of_last_run_container;
+			}	
+					
 		};
 
 	

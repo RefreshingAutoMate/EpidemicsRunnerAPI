@@ -29,4 +29,5 @@ The following algorithms are currently implemented:
 |SIR|Classical Susceptible-Infected-Recovered ODE Model augmented with a deceased class|
 |SEIRD| Extended SIR model accounting for a new class (Exposed) amongst other additions|
 |SEIRD_VARA|Extended SIR model paired with variable (over time) infection rate|
+|SEIRD_CK|Coupled ODE SEIRD Model to model interaction between the ODE systems|
 |SEIRD_PDE| A PDE formulation of the SEIRD model, discretized using Finite Differences|

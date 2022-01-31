@@ -127,7 +127,7 @@ namespace ug{
 			void change_linear_implicit_maximum_stepsize(double _ht_max){
 				ht_max=_ht_max;
 			}			
-			std::tuple<std::vector<F>,std::vector<F>> run(F t0, const T u0, F tend){
+			std::tuple<std::vector<F>,std::vector<F>> run(F t0, const T u0, F tend, T* cumulated_exposed=nullptr, T* cumulated_infected=nullptr){
 				std::vector<F> res;
 				std::vector<F> ts;
 				
@@ -139,16 +139,32 @@ namespace ug{
 				ts.push_back(t0);
 				std::array<F,5> u={u0[0],u0[1],u0[2],u0[3],u0[4]};
 				
+				cumulated_exposed_of_last_run=u0[1];
+				cumulated_infected_of_last_run=u0[2];
+				cumulated_exposed_of_last_run_container.reserve(int((tend-t0)/ht));		
+				cumulated_infected_of_last_run_container.reserve(int((tend-t0)/ht));				
+				cumulated_exposed_of_last_run_container.push_back(u0[1]);
+				cumulated_infected_of_last_run_container.push_back(u0[2]);		
+							
 				F t=t0+ht;
 				while(t<=tend){
 					calc_values(t,u,res);
+					update_metainfo(u, t, ht);					
 					ts.push_back(t);
 					t+=ht;
 				}
 				if (t!=tend){
 					calc_values(tend,u,res);
+					update_metainfo(u, tend, ht);	
 					ts.push_back(tend);
 				}
+				if (cumulated_exposed != nullptr){
+					*cumulated_exposed=cumulated_exposed_of_last_run_container;
+					if (cumulated_infected != nullptr){
+						*cumulated_infected=cumulated_infected_of_last_run_container;
+					
+					}
+				}				
 				return std::make_tuple(ts,res);			
 			}
 			
@@ -169,8 +185,6 @@ namespace ug{
 				F G = u[0]; // Gesunde (Susceptibles)
 				F A = u[1]; // Angesteckte (Exposed)
 				F K = u[2]; // Kranke (Infected)
-				//F R = u[3]; // Erholte (Recovered)
-				//F V = u[4]; // Verstorbene (Deaths)
 
 				F _alpha=eval_alpha(t);
 				res[0] = -_alpha * G * A; 				// dG/dt=-alpha*G*A
@@ -222,11 +236,17 @@ namespace ug{
 					*cumulated_exposed=cumulated_exposed_of_last_run_container;
 					if (cumulated_infected != nullptr){
 						*cumulated_infected=cumulated_infected_of_last_run_container;
-					
 					}
 				}
 				return std::make_tuple(result.first,result.second);
 			}
+			
+			std::vector<F> get_cumulated_exposed() const{
+				return cumulated_exposed_of_last_run_container;
+			}
+			std::vector<F> get_cumulated_infected() const{
+				return cumulated_infected_of_last_run_container;
+			}			
 		
 		};
 

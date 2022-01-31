@@ -114,14 +114,7 @@ namespace ug{
 				return std::make_tuple(ts,res);			
 			}
 			
-			void update_metainfo(std::array<F, 5>& u, F t, F h){	
-				F G = u[0]; // Gesunde (Susceptibles)
-				F A = u[1]; // Angesteckte (Exposed)
-				F K = u[2]; // Kranke (Infected)							
-				cumulated_exposed_of_last_run+=alpha * G * A*h;
-				cumulated_infected_of_last_run+=(kappa / qq) * A*h;
-				cumulated_exposed_of_last_run_container.push_back(cumulated_exposed_of_last_run);
-				cumulated_infected_of_last_run_container.push_back(cumulated_infected_of_last_run);					
+			void update_metainfo(std::array<F, 5>& u, F t, F h){					
 			}
 			
 			//!< Returns the system matrix of the ordinary differential equations system determined by the SEIRD model evaluated at time t.
