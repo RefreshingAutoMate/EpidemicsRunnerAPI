@@ -42,7 +42,9 @@ namespace ug {
 			F D=1; /**< Diffusion coefficient for the Susceptible and Exposed class*/
 			const size_t dimModel = 5;
 			F hx = 0.25; /**< Step size of the ODE solver in the spatial domain. Does not have to equal ht*/
-			F ht = 0.25; /**< Step size of the ODE solver in the time domain. Does not have to equal hx*/
+			F ht = 0.01; /**< Step size of the ODE solver in the time domain. Does not have to equal hx*/
+			F tol=0.000000001;
+			F ht_max=0.1;
 			std::string filepath=""; /**< Filepath where simulation results are stored*/
 			std::string filename=""; /**< Name of the created file that contains simulation results*/
 
@@ -572,12 +574,24 @@ namespace ug {
 			
 			const std::vector<std::string> names = { "Susceptibles","Exposed", "Infected", "Recovered", "Deaths" };  /**< Names of the various SEIRD classes */
 
-			/*! Sets the time step size for the ordinary differential equation solvers.
+			/*! Sets the minimum time step size for the ordinary differential equation solvers. If the solver is without adaptive step size mechanisisms, the min step size equals the utilized step size.
 			@param[in] _ht Time step size for the ODE solvers		
 			*/
 			void change_minimum_stepsize_time(F _ht) {
 				ht = _ht;
 			}
+			
+			void change_linear_implicit_tol(double _tol){
+				tol=_tol;
+			}
+			
+			/*! Sets the maximum time step size for the linear implicit ordinary differential equation solver.
+			@param[in] _ht Maximum time step size for the ODE solvers		
+			*/
+			void change_linear_implicit_maximum_stepsize(double _ht_max){
+				ht_max=_ht_max;
+			}				
+			
 			/*! Sets the spatial step size for the ordinary differential equation solvers.
 			@param[in] _hx Spatial step size for the ODE solvers		
 			*/
@@ -744,8 +758,9 @@ namespace ug {
 				solver.set_store_to_file(true, filepath, filename,&writer);
 
 				writer.write_gridmapping(filepath, filename+".txt",t0,u0);
-				
 				solver.change_minimum_stepsize(ht);
+				solver.change_maximum_stepsize(ht_max);
+				solver.change_tol(tol);
 				auto result=solver.run_nonadaptive(t0, u0, tend);
 				std::cout<<"Ended linear implicit solver\n";
 				std::cout<<result.second.size();

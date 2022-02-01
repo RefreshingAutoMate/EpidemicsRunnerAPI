@@ -106,7 +106,7 @@ namespace ug{
 						C=x1;
 						c=y1;
 					}
-					return d*std::exp(double(-((t-R)*(t-R))/((t-C)*(t-C))));
+					return y0+d*std::exp(double(-((t-R)*(t-R))/((t-C)*(t-C))));
 				}
 				
 			}

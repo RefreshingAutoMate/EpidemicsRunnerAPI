@@ -8,14 +8,15 @@
 namespace ug{
 	namespace epi{
 	
-		template<class T, int N>
+		template<class T>
 		class SEIRD_CK{
 			using F=typename T::value_type;
 			
 			private:
 			std::vector<F> alpha;
 			std::vector<F> alpha_limits;
-			int system_dim=N*7;
+			int N;
+			int system_dim;
 			std::vector<F> kappa;
 			std::vector<F> theta;
 			std::vector<F> qq;
@@ -79,14 +80,14 @@ namespace ug{
 						C=x1;
 						c=y1;
 					}
-					return d*std::exp(double(-((t-R)*(t-R))/((t-C)*(t-C))));
+					return y0+d*std::exp(double(-((t-R)*(t-R))/((t-C)*(t-C))));
 				}
 				
 			}
 			
 			public:
-			const std::array<std::string,5> names={"Susceptibles","Exposed", "Infected", "Recovered", "Deaths"};
-			SEIRD_CK(std::vector<F> _alpha,std::vector<F>& _alpha_limits ,std::vector<F>& _kappa, std::vector<F>& _theta,std::vector<F>& _qq, std::vector<F>& _pp, std::vector<F>& _sigma, std::vector<F>& _omega, std::vector<F> _gamma,std::vector<F>& _epsilon, std::vector<F>& _phi):alpha(_alpha),alpha_limits(_alpha_limits),kappa(_kappa),theta(_theta),qq(_qq),pp(_pp), sigma(_sigma), omega(_omega),phi(_phi), epsilon(_epsilon), gamma(_gamma){
+			const std::array<std::string,7> names={"Susceptibles","Exposed", "Infected", "Recovered", "Deaths", "Traveling Susceptibles", "Traveling Exposed"};
+			SEIRD_CK(int _N, std::vector<F> _alpha,std::vector<F>& _alpha_limits ,std::vector<F>& _kappa, std::vector<F>& _theta,std::vector<F>& _qq, std::vector<F>& _pp, std::vector<F>& _sigma, std::vector<F>& _omega, std::vector<F> _gamma,std::vector<F>& _epsilon, std::vector<F>& _phi):N(_N),system_dim(_N*7),alpha(_alpha),alpha_limits(_alpha_limits),kappa(_kappa),theta(_theta),qq(_qq),pp(_pp), sigma(_sigma), omega(_omega),phi(_phi), epsilon(_epsilon), gamma(_gamma){
 				
 			}	
 			
@@ -102,7 +103,7 @@ namespace ug{
 				ht_max=_ht_max;
 			}			
 			
-			void update_metainfo(std::array<F, 7*N>& u, F t, F h){	
+			void update_metainfo(std::vector<F>& u, F t, F h){	
 			
 				for (int i=0;i<N;i++){
 					F _alpha=eval_alpha(t,i);
@@ -117,9 +118,9 @@ namespace ug{
 		
 			}
 			
-			std::array<F, N*7> system(std::array<F, N*7>& u, F t) {
+			std::vector<F> system(std::vector<F>& u, F t) {
 				
-				std::array<F, N*7> res;
+				std::vector<F> res(7*N);
 				for (int i=0;i<N;i++){
 					
 					F S=u[i*7];
@@ -185,8 +186,8 @@ namespace ug{
 				return res; 
 			}
 		
-			std::array<F,N*7*N*7> jacobian(const std::array<F, N*7>& u, F t) {
-				std::array<F, N*7*N*7> res;
+			std::vector<F> jacobian(const std::vector<F>& u, F t) {
+				std::vector<F> res(N*7*N*7);
 			
 				for (int i = 0; i < res.size(); i++) {
 					res[i] = 0;
@@ -302,7 +303,7 @@ namespace ug{
 				return res;
 			}
 			std::tuple<std::vector<F>,std::vector<F>> run_linear_implicit(F t0, const T& u0, F tend, std::vector<std::vector<F>>* cumulated_exposed=nullptr, std::vector<std::vector<F>>* cumulated_infected=nullptr) {
-				std::array<F, N*7> u;
+				std::vector<F> u(7*N);
 				for (int i=0;i<system_dim;i++){
 					u[i]=u0[i];
 				}
@@ -314,7 +315,7 @@ namespace ug{
 					cumulated_infected_of_last_run_container.push_back(std::vector<F>(1,u0[i*7+2]));	
 				
 				}
-				utility::LinearImplicitSolver23<std::array<F,N*7>,std::array<F,N*7*N*7>,SEIRD_CK,F> solver(this,system_dim);
+				utility::LinearImplicitSolver23<std::vector<F>,std::vector<F>,SEIRD_CK,F> solver(this,system_dim);
 				solver.change_minimum_stepsize(ht);
 				solver.change_maximum_stepsize(ht_max);
 				solver.change_tol(tol);

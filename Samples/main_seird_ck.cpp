@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
 	double t_start=0;
 	double t_end=14;
 	
-	ug::epi::SEIRD_CK<std::vector<double>,regions> seird_model(alpha, alpha_limits,kappa,theta,qq,pp, sigma, omega, gamma,epsilon, phi);
+	ug::epi::SEIRD_CK<std::vector<double>> seird_model(regions,alpha, alpha_limits,kappa,theta,qq,pp, sigma, omega, gamma,epsilon, phi);
 	
 	
 	seird_model.change_minimum_stepsize(0.00001);

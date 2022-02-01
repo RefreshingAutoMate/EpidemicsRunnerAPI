@@ -2,9 +2,6 @@ import covpred
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-
-
 class InitialConditions:
 	def __init__(self, u0, alpha,name):
 		self.u0=u0
@@ -19,10 +16,8 @@ class InitialConditions:
 		self.epsilon=1e-1
 		self.phi=8e-3
 		
-
 alpha=[]
 alpha_limits=[20]
-	
 kappa=[]
 theta=[]
 qq=[]
@@ -64,9 +59,10 @@ for i in range(0,len(region_initials)):
 		for j in range(len(region_initials)):
 			sigma.append(1/(len(region_initials)-1))
 
-model=covpred.SEIRD_CK(alpha, alpha_limits,kappa,theta,qq,pp, sigma, omega, gamma,epsilon, phi)
+model=covpred.SEIRD_CK(len(region_initials),alpha, alpha_limits,kappa,theta,qq,pp, sigma, omega, gamma,epsilon, phi)
 model.change_minimum_stepsize(0.00001)
 model.change_linear_implicit_maximum_stepsize(0.0001)
+
 timepoints, sim_data=model.run_linear_implicit(t_start,u0,t_end)
 
 sim_data=np.array(sim_data).reshape(len(timepoints),int(len(sim_data)/len(timepoints))) #reshape data so that result is not one long contiguous array anymore
