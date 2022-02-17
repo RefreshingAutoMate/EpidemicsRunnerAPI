@@ -142,11 +142,10 @@ namespace ug{
 						}
 					}
 					res[i*7]=-eval_alpha(t,i)*(S*E+sum)-omega[i]*S+gamma[i]*C; // S
-					
 					sum=0;
 					for (int j=0;j<N;j++){
 						if (j!=i){
-							sum+=sigma[j*N+i]*u[j*7+5]*u[i*7+1];
+							sum+=sigma[j*N+i]*u[j*7+5]*E;
 						}
 					}					
 					for (int j=0;j<N;j++){
@@ -167,7 +166,7 @@ namespace ug{
 					sum=0;
 					for (int j=0;j<N;j++){
 						if (j!=i){
-							sum+=sigma[i*N+j]*u[i*7+5]*u[j*7+1];
+							sum+=sigma[i*N+j]*C*u[j*7+1];
 						}
 					}
 					
@@ -180,7 +179,7 @@ namespace ug{
 						}
 					}
 					
-					res[i*7+6]=phi[i]*E-epsilon[i]*K-sum; //K
+					res[i*7+6]=phi[i]*E-epsilon[i]*K+sum; //K
 				}
 				
 				return res; 
@@ -194,8 +193,8 @@ namespace ug{
 				}
 				
 				int stride=system_dim;
-							
-				for (int i=0;7*i<N;i++){
+				int iter=0;			
+				for (int i=0;i<N;i++){
 					F S=u[i*7];
 					F E= u[i*7+1];
 					F I=u[i*7+2];
@@ -211,10 +210,9 @@ namespace ug{
 							sum+=sigma[j*N+i]*u[j*7+6];
 						}
 					}
-					
 					res[i*7*stride+i*7]=-eval_alpha(t,i)*(E+sum)-omega[i];
 					res[i*7*stride+i*7+1]=-eval_alpha(t,i)*S;
-					
+								
 					sum=0;
 					for (int j=0;j<N;j++){
 						if (j!=i){
@@ -222,9 +220,9 @@ namespace ug{
 						}
 					}
 					
-					res[i*7*stride+i*7+2]=-sum;
-					res[i*7*stride+i*7+5]=gamma[i];
-				
+					//res[i*7*stride+i*7+1]-=sum;
+					//res[i*7*stride+i*7+5]=gamma[i];
+	
 					for (int j=0;j<N;j++){
 						if (j!=i){
 							res[i*7*stride+j*7+5]=-eval_alpha(t,i)*sigma[j*system_dim+i]*E;
@@ -284,9 +282,6 @@ namespace ug{
 						if (j!=i){
 							res[(i*7+5)*stride+j*7+1]=eval_alpha(t,i)*sigma[i*system_dim+j]*C;
 						}
-						if (j==N-1){
-							std::cout<<N<<"\n";
-						}
 					}	
 					
 					//K				
@@ -297,7 +292,13 @@ namespace ug{
 						if (j!=i){
 							sum=eval_alpha(t,j)*sigma[i*system_dim+j]*u[j*7+1];
 						}
-					}		
+					}	
+					
+					for (int j=0;j<N;j++){
+						if (j!=i){
+							res[(i*7+5)*stride+j*7+5]=eval_alpha(t,j)*sigma[i*system_dim+j]*C;
+						}
+					}							
 					
 					res[(i*7+6)*stride+i*7+5]=sum;
 					

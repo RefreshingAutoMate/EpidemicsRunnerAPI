@@ -188,8 +188,8 @@ namespace ug {
 						return std::make_pair(timepoints, datapoints);
 					}
 					else{
-						std::cout<<t0<<"  "<<tend<<"\n";
-						std::cin.get();
+					//	std::cout<<t0<<"  "<<tend<<"\n";
+						//std::cin.get();
 						std::vector<F> datapoints_reversed(datapoints.size());
 						std::vector<F> timepoints_reversed(timepoints.size());
 						
@@ -270,25 +270,19 @@ namespace ug {
 						
 						while (!stop_iterations){
 							iter2++;
-							std::cout<<"iter:"<<iter2<<" \n";				
+							//std::cout<<"iter:"<<iter2<<" \n";				
 							//k1
 							T1 temp = model->system(u,t); //it only has dim entries but otherwise type errors in this old version of dgemm
 							std::vector<F> fy(dim);
 							std::copy(temp.begin(),temp.end(), fy.begin());
-							
+							//std::cout<<u[0]<<"\t"<<u[1*7+6]<<"\n";
+							//std::cout<<temp[0]<<"\t"<<u[1*7+6]<<"\n";
 							I = create_identity_matrix();
 							T2 temp2=model->jacobian(u,t);
 							std::copy(temp2.begin(), temp2.end(), J.begin());
-							/*for (int i=0;i<dim*dim;i++){
-								std::cout<<temp2[i]<<"  ";
-							}
-							std::cout<<"\n";
-						std::cin.get();	
-						* */
 			
 							M=sumAB(F(1), I, F(-a * h), J);
 							//std::cout<<temp2.size()<<" vs ." <<M.size()<<"\n";
-							std::cin.get();
 							co::dc::qr<typename std::vector<F>::iterator,F> (M.begin(), dim, dim, Qt.begin(), R.begin());
 							//co::dc::qr<typename std::vector<F>::iterator> (M.begin(), dim, dim, Qt.begin(), R.begin());
 							co::mul::dgemm_nn(dim, 1, dim, F(1.0), Qt.begin(), 1, dim, fy.begin(), 1, 1, F(0.0), q1.begin(), 1, 1);
