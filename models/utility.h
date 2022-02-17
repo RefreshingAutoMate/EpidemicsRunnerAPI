@@ -48,7 +48,6 @@ namespace ug {
 
 				std::vector<F> sumAB(F alpha, std::vector<F>& A, F beta, std::vector<F>& B) {
 					std::vector<F>  result(dim * dim, F(0.0));
-
 					for (int i = 0; i < dim;i++) {
 						for (int j = 0; j < dim; j++) {
 							result[i * dim + j] = alpha*A[i * dim + j] + beta*B[i * dim + j];
@@ -130,6 +129,7 @@ namespace ug {
 					bool schranke=true;
 					
 					while (t<tend+h) {	
+
 /*					
 						if (std::abs(tend-t)<std::abs(h)){
 							schranke=false;
@@ -262,6 +262,7 @@ namespace ug {
 					}
 					
 					while (t<=tend) {
+						//std::cout<<"t:"<<t<<"\n";
 						stop_iterations=false;
 						double err=999999999;
 						double toln=tol*u_prev_norm1;
@@ -269,7 +270,7 @@ namespace ug {
 						
 						while (!stop_iterations){
 							iter2++;
-												
+							std::cout<<"iter:"<<iter2<<" \n";				
 							//k1
 							T1 temp = model->system(u,t); //it only has dim entries but otherwise type errors in this old version of dgemm
 							std::vector<F> fy(dim);
@@ -278,7 +279,16 @@ namespace ug {
 							I = create_identity_matrix();
 							T2 temp2=model->jacobian(u,t);
 							std::copy(temp2.begin(), temp2.end(), J.begin());
+							/*for (int i=0;i<dim*dim;i++){
+								std::cout<<temp2[i]<<"  ";
+							}
+							std::cout<<"\n";
+						std::cin.get();	
+						* */
+			
 							M=sumAB(F(1), I, F(-a * h), J);
+							//std::cout<<temp2.size()<<" vs ." <<M.size()<<"\n";
+							std::cin.get();
 							co::dc::qr<typename std::vector<F>::iterator,F> (M.begin(), dim, dim, Qt.begin(), R.begin());
 							//co::dc::qr<typename std::vector<F>::iterator> (M.begin(), dim, dim, Qt.begin(), R.begin());
 							co::mul::dgemm_nn(dim, 1, dim, F(1.0), Qt.begin(), 1, dim, fy.begin(), 1, 1, F(0.0), q1.begin(), 1, 1);
@@ -289,7 +299,6 @@ namespace ug {
 								u[i] = u_copy[i] + F(0.5) * h * k1[i];
 								//std::cout<<I[i]<<"\t";
 							}
-						
 							temp = model->system(u,t+F(0.5)*h); //it only has dim entries but otherwise type errors in this old version of dgemm
 							temp2=model->jacobian(u,t+F(0.5)*h);
 							std::copy(temp.begin(), temp.end(), fy.begin());

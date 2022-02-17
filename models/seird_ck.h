@@ -195,7 +195,7 @@ namespace ug{
 				
 				int stride=system_dim;
 							
-				for (int i=0;i<N;i++){
+				for (int i=0;7*i<N;i++){
 					F S=u[i*7];
 					F E= u[i*7+1];
 					F I=u[i*7+2];
@@ -227,8 +227,8 @@ namespace ug{
 				
 					for (int j=0;j<N;j++){
 						if (j!=i){
-							res[i*7*stride+i*7+j*system_dim+5]=-eval_alpha(t,i)*sigma[j*system_dim+i]*E;
-							res[i*7*stride+i*7+j*system_dim+6]=-eval_alpha(t,i)*S*sigma[j*system_dim+i];
+							res[i*7*stride+j*7+5]=-eval_alpha(t,i)*sigma[j*system_dim+i]*E;
+							res[i*7*stride+j*7+6]=-eval_alpha(t,i)*S*sigma[j*system_dim+i];
 						}
 					}
 					
@@ -282,7 +282,10 @@ namespace ug{
 					
 					for (int j=0;j<N;j++){
 						if (j!=i){
-							res[(i*7+1)*stride+j*system_dim+1]=eval_alpha(t,i)*sigma[i*system_dim+j]*C;
+							res[(i*7+5)*stride+j*7+1]=eval_alpha(t,i)*sigma[i*system_dim+j]*C;
+						}
+						if (j==N-1){
+							std::cout<<N<<"\n";
 						}
 					}	
 					
@@ -299,7 +302,9 @@ namespace ug{
 					res[(i*7+6)*stride+i*7+5]=sum;
 					
 					res[(i*7+6)*stride+i*7+6]=-epsilon[i];
+					
 					}
+					
 				return res;
 			}
 			std::tuple<std::vector<F>,std::vector<F>> run_linear_implicit(F t0, const T& u0, F tend, std::vector<std::vector<F>>* cumulated_exposed=nullptr, std::vector<std::vector<F>>* cumulated_infected=nullptr) {
